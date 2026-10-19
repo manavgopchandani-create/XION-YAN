@@ -17,6 +17,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Unzip source
+        run: |
+          unzip -o btth-heavenly-flames-src.zip
+          if [ -d btth-heavenly-flames-src ]; then
+            shopt -s dotglob
+            mv btth-heavenly-flames-src/* .
+            rmdir btth-heavenly-flames-src || true
+          fi
+          ls -la
+          test -f gradlew
+
       - name: Build with Gradle
         run: |
           chmod +x gradlew
