@@ -17,24 +17,35 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Unzip source
+      - name: Unzip and prepare
         run: |
           unzip -o btth-heavenly-flames-src.zip
           if [ -d btth-heavenly-flames-src ]; then
-            shopt -s dotglob
-            mv btth-heavenly-flames-src/* .
-            rmdir btth-heavenly-flames-src || true
+            cp -a btth-heavenly-flames-src/. .
+            rm -rf btth-heavenly-flames-src
           fi
           ls -la
-          test -f gradlew
+          ls -la gradlew || ls -la */gradlew || true
 
-      - name: Build with Gradle
+      - name: Build
         run: |
-          chmod +x gradlew
-          ./gradlew build --no-daemon
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+            ./gradlew build --no-daemon
+          elif [ -f btth-heavenly-flames-src/gradlew ]; then
+            cd btth-heavenly-flames-src
+            chmod +x gradlew
+            ./gradlew build --no-daemon
+          else
+            echo "gradlew not found"
+            find . -name gradlew
+            exit 1
+          fi
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
           name: btth-heavenly-flames
-          path: build/libs/*.jar
+          path: |
+            build/libs/*.jar
+            **/build/libs/*.jar
